@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.member.dao.MenusDao">
+
+     <resultMap id="menusMap" type="com.member.bean.Menus">
+       <id property="id" column="id"/>
+	   <collection property="childSet"  column="id" ofType="com.member.bean.Menus" select="selectMenu"/>
+	 </resultMap>
+	 
+     <select id="selectMenu" parameterType="int" resultMap="menusMap">  
+        SELECT * from menus m WHERE m.parent= #{id} order by m.id
+    </select>
+    
+    <select id="menuList" parameterType="com.member.bean.Menus" resultType="com.member.bean.Menus">  
+        SELECT * from menus m 
+         <include refid="page" />  
+    </select>
+    
+    <select id="menuCount" parameterType="com.member.bean.Menus" resultType="int">
+		 select count(*) from menus where 1=1
+    </select>
+    
+     <sql id="page">  
+        limit  #{start}, #{rows}
+    </sql> 
+</mapper>

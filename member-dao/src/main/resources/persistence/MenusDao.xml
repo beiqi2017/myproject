@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.member.dao.MenusDao">
+
+    <cache eviction="FIFO" flushInterval="60000" size="1024" readOnly="true"/>   
+     <resultMap id="menusMap" type="com.member.bean.Menus">
+        <id property="id" column="id"/>
+        <result property="div" column="div"/>
+	    <result property="title" column="title"/>
+	    <result property="src" column="src"/>
+	    <result property="icon" column="icon"/>
+	    <result property="parent" column="parent"/>
+	    <result property="level" column="level"/>
+	    <collection property="childSet"  column="id" ofType="com.member.bean.Menus">
+	      <id property="id" column="id1"/>
+	      <result property="div" column="div1"/>
+	      <result property="title" column="title1"/>
+	      <result property="src" column="src1"/>
+	      <result property="icon" column="icon1"/>
+	      <result property="parent" column="parent1"/>
+	      <result property="level" column="level1"/>
+	      <collection property="childSet"  column="id" ofType="com.member.bean.Menus">
+	         <id property="id" column="id2"/>
+	         <result property="div" column="div2"/>
+	         <result property="title" column="title2"/>
+	         <result property="src" column="src2"/>
+	         <result property="icon" column="icon2"/>
+	         <result property="parent" column="parent2"/>
+	         <result property="level" column="level2"/>
+	     </collection>
+	   </collection>
+	 </resultMap>
+	 
+     <select id="selectMenu" parameterType="int" resultMap="menusMap">  
+      
+      select m6.*,m8.id as id2,m8.div as div2,m8.title as title2,m8.src as src2,m8.icon as icon2, m8.parent as parent2, m8.level as level2  
+      from (
+
+  select m2.*,m4.id as id1,m4.div as div1,m4.title as title1,m4.src as src1,m4.icon as icon1, m4.parent as parent1, m4.level as level1 
+  from (SELECT m1.* from menus m1 where m1.level=1) m2 left join (select m3.* from menus m3 where m3.level=2) m4 on m2.id=m4.parent ) m6
+
+       left join (select m7.* from menus m7 where m7.level=3) m8 
+        on m6.id1=m8.parent
+
+    </select>
+    
+    <select id="menuList" parameterType="com.member.bean.Menus" resultType="com.member.bean.Menus">  
+        SELECT * from menus   where 1=1
+         <if test="id!=null and id!=''">
+		 	and id=#{id}
+		 </if>
+		 <if test="title!=null and title!=''">
+		 	and title=#{title}
+		 </if>
+		 <if test="parent!=null and parent!=''">
+		 	and parent=#{parent}
+		 </if>
+		 <if test="level!=null and level!=''">
+		 	and level=#{level}
+		 </if>
+         <include refid="page" />  
+    </select>
+    
+    <select id="menuCount" parameterType="com.member.bean.Menus" resultType="int">
+		 select count(*) from menus where 1=1
+		  <if test="id!=null and id!=''">
+		 	and id=#{id}
+		 </if>
+		 <if test="title!=null and title!=''">
+		 	and title=#{title}
+		 </if>
+		 <if test="parent!=null and parent!=''">
+		 	and parent=#{parent}
+		 </if>
+		 <if test="level!=null and level!=''">
+		 	and level=#{level}
+		 </if>
+    </select>
+    
+     <sql id="page">  
+        limit  #{start}, #{rows}
+    </sql> 
+</mapper>

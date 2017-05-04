@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+     http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+                     
+	<context:component-scan base-package="com.member">
+		<!-- 不扫描带有@Controller注解的类。因为这些类已经随容器启动时，在spring-mvc中扫描过一遍了 -->  
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/> 
+	</context:component-scan>
+    
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+			<property name="driverClassName" value="${jdbc.driverClassName}"/>
+           	<property name="url" value="${jdbc.url}"/>  
+		  	<property name="username" value="${jdbc.username}"/>
+		  	<property name="password" value="${jdbc.password}"/>
+		  	<property name="validationQuery" value="select 1 from dual"/>
+		  	<property name="testWhileIdle" value="true"/>
+		  	<property name="timeBetweenEvictionRunsMillis" value="3600000"/>
+		  	<property name="minEvictableIdleTimeMillis" value="18000000"/>
+		  	<property name="testOnBorrow" value="true"/>
+			<!--maxActive: 最大连接数量-->    
+	        <property name="maxActive" value="100"/>  
+	        <!--minIdle: 最小空闲连接-->    
+	        <property name="minIdle" value="20"/>  
+	        <!--maxIdle: 最大空闲连接-->    
+	        <property name="maxIdle" value="20"/>  
+	        <!--initialSize: 初始化连接-->    
+	        <property name="initialSize" value="5"/> 
+   	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+    	<tx:attributes>
+            <tx:method name="*" propagation="REQUIRED" rollback-for="exception"/>
+    	</tx:attributes>
+    </tx:advice>
+
+    <aop:config>													 
+		<aop:pointcut id="allServiceMethod" expression="execution(* com.member.service..*(..))" />
+		<!-- 指定在txAdvice切入点应用txAdvice事务切面 -->
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="allServiceMethod" order="1"/>
+	</aop:config>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:persistence/*.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.member.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+ 
+     <bean id="shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">    
+      <property  name = "securityManager"   ref = "securityManager"/>    
+      <property  name = "loginUrl" value = "/index.jsp"/>    
+      <property  name = "successUrl" value = "/user/list"/>    
+      <property  name = "unauthorizedUrl" value = "/index.jsp"/>    
+      <property  name = "filterChainDefinitions">    
+          <value>    
+             /login**=anon    
+             /code**=anon    
+             /user/**=authc   
+             /role/**=authc,perms[aa:list:*]   
+             /Test/**=authc,perms[aa:add:1]   
+             /** =anon   
+          </value>    
+      </property >    
+ </bean >
+
+
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="myRealm" />
+		<!--<property name="cacheManager" ref="ehCacheShiro"></property>   -->
+	</bean>
+	<bean id="ehCacheShiro" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml" />
+	</bean>
+	<bean id="myRealm" class="com.member.controller.UserRealm"></bean>
+
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+</beans>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.member</groupId>
+    <artifactId>member</artifactId>
+    <version>1.0.0</version>
+  </parent>
+  <groupId>com.member.web</groupId>
+  <artifactId>member-web</artifactId>
+  <version>1.0.0</version>
+  <packaging>war</packaging>
+  <name>member-web Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>com.member.dao</groupId>
+    	<artifactId>member-dao</artifactId>
+    	<version>1.0.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.member.service</groupId>
+    	<artifactId>member-service</artifactId>
+    	<version>1.0.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>member</finalName>
+  </build>
+</project>
