@@ -233,7 +233,7 @@
 					<path>/member</path>
 					<port>8080</port>
 					<uriEncoding>UTF-8</uriEncoding>
-					<url>http://localhost:8081/member</url>
+					<url>http://localhost:8080/member</url>
 					<server>tomcat7</server>
 				</configuration>
 			</plugin>
